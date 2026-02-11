@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Una pregunta especial...</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@300;600&display=swap');
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            height: 100vh;
+            overflow: hidden;
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #d32f2f;
+        }
+
+        #app {
+            text-align: center;
+            width: 85%; /* Más ancho en celular */
+            max-width: 400px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .slide {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            animation: fadeIn 1s ease;
+            width: 100%;
+        }
+
+        .active { display: flex; }
+
+        h1 {
+            font-family: 'Dancing Script', cursive;
+            font-size: 3rem; /* Ajustado para móvil */
+            margin-bottom: 10px;
+            color: #ff4d6d;
+            line-height: 1.2;
+        }
+
+        p {
+            font-size: 1.1rem;
+            color: #555;
+            margin-bottom: 20px;
+            padding: 0 10px;
+        }
+
+        .polaroid {
+            background: white;
+            padding: 10px 10px 35px 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            transform: rotate(-3deg);
+            margin: 15px 0;
+            width: 90%; /* Ajuste móvil */
+            border-radius: 4px;
+        }
+        
+        .polaroid img, .polaroid video {
+            width: 100%;
+            border-radius: 2px;
+            display: block;
+        }
+
+        .btn {
+            background: #ff4d6d;
+            color: white;
+            border: none;
+            padding: 12px 25px; /* Botones más táctiles */
+            font-size: 1.1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(255, 77, 109, 0.4);
+            margin: 10px;
+            font-weight: 600;
+            -webkit-tap-highlight-color: transparent; /* Quita el flash azul al tocar en Android */
+        }
+
+        /* El botón NO debe ser absoluto desde el inicio para evitar saltos */
+        #btnGroup {
+            position: relative;
+            height: 150px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 20px;
+        }
+
+        #noBtn {
+            position: absolute;
+            background: #999;
+            transition: top 0.3s, left 0.3s; /* Movimiento suave */
+        }
+
+        .bg-heart {
+            position: absolute;
+            color: rgba(255, 182, 193, 0.4);
+            animation: floatUp 10s linear infinite;
+            z-index: 0;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(100vh) scale(0.5); opacity: 0; }
+            50% { opacity: 0.8; }
+            100% { transform: translateY(-10vh) scale(1.2); opacity: 0; }
+        }
+
+        #canvas {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 100;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="background-hearts"></div>
+    <canvas id="canvas"></canvas>
+
+    <div id="app">
+        
+        <div id="slide1" class="slide active">
+            <h1>Hola Amor</h1>
+            <p>Tengo algo muy especial que preguntarte...</p>
+            <button class="btn" onclick="nextSlide(2)">Ver más ❤️</button>
+        </div>
+
+        <div id="slide2" class="slide">
+            <div class="polaroid">
+                <video autoplay loop muted playsinline>
+                    <source src="video.mp4" type="video/mp4">
+                    Tu celular no soporta videos.
+                </video>
+            </div>
+            <p>¿Recuerdas este momento?</p>
+            <button class="btn" onclick="nextSlide(3)">Siguiente ✨</button>
+        </div>
+
+        <div id="slide3" class="slide">
+            <div class="polaroid" style="transform: rotate(3deg);">
+                <img src="1.jpg" alt="Recuerdo 1">
+            </div>
+            <p>Cada día contigo es una aventura.</p>
+            <button class="btn" onclick="nextSlide(4)">La Pregunta 💌</button>
+        </div>
+
+        <div id="slide4" class="slide">
+            <h1>¿Quieres ser mi San Valentín?</h1>
+            <p>Prometo chocolates y besos 🍫</p>
+            
+            <div id="btnGroup">
+                <button class="btn" onclick="celebrate()">¡SÍ! 😍</button>
+                <button id="noBtn" class="btn">No 😢</button>
+            </div>
+        </div>
+
+        <div id="slide5" class="slide">
+            <h1>¡Sabía que dirías que sí!</h1>
+            <div class="polaroid">
+                <img src="2.jpg" alt="Celebración">
+            </div>
+            <p>Te amo ❤️</p>
+        </div>
+
+    </div>
+
+    <script>
+        // LÓGICA DEL PROGRAMA
+        
+        function nextSlide(slideNumber) {
+            document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+            document.getElementById('slide' + slideNumber).classList.add('active');
+            
+            // Si pasamos a la pantalla del botón (4), inicializamos su posición
+            if(slideNumber === 4) {
+                initNoBtn();
+            }
+        }
+
+        function celebrate() {
+            nextSlide(5);
+            startConfetti();
+        }
+
+        // --- LÓGICA MEJORADA DEL BOTÓN "NO" PARA CELULAR ---
+        function initNoBtn() {
+            const noBtn = document.getElementById('noBtn');
+            const yesBtn = document.querySelector('#btnGroup button:first-child');
+            
+            // Posición inicial al lado del botón SI
+            // (Esto se maneja por CSS flexbox, pero preparamos el movimiento absoluto)
+        }
+
+        const noBtn = document.getElementById('noBtn');
+
+        // Esta función calcula una posición segura dentro de la pantalla
+        function moveButton(e) {
+            // Evitamos que el botón reciba el "clic" si es táctil
+            if(e) e.preventDefault(); 
+
+            // Obtenemos dimensiones de la pantalla segura (restando bordes)
+            const width = window.innerWidth - 100; 
+            const height = window.innerHeight - 100;
+            
+            const newX = Math.random() * width + 50; // Margen de 50px
+            const newY = Math.random() * height + 50;
+
+            noBtn.style.position = 'fixed'; // Cambiamos a fixed para mover libremente
+            noBtn.style.left = newX + 'px';
+            noBtn.style.top = newY + 'px';
+        }
+
+        // EVENTOS PARA PC Y CELULAR
+        // "mouseover" funciona en PC
+        noBtn.addEventListener('mouseover', moveButton);
+        
+        // "touchstart" detecta cuando el dedo TOCA la pantalla (mucho mejor para celular)
+        noBtn.addEventListener('touchstart', moveButton); 
+        
+        // "click" por si acaso alguien logra darle click rápido
+        noBtn.addEventListener('click', moveButton);
+
+
+        // --- EFECTOS VISUALES (CORAZONES Y CONFETI) ---
+        function createHearts() {
+            const container = document.getElementById('background-hearts');
+            for(let i=0; i<15; i++) {
+                const heart = document.createElement('div');
+                heart.classList.add('bg-heart');
+                heart.innerHTML = '❤️';
+                heart.style.left = Math.random() * 100 + 'vw';
+                heart.style.animationDuration = Math.random() * 3 + 5 + 's';
+                heart.style.fontSize = Math.random() * 20 + 10 + 'px';
+                container.appendChild(heart);
+            }
+        }
+        createHearts();
+
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+        let confetti = [];
+
+        function startConfetti() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            for (let i = 0; i < 100; i++) {
+                confetti.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height - canvas.height,
+                    color: `hsl(${Math.random() * 360}, 100%, 50%)`,
+                    size: Math.random() * 5 + 5,
+                    speed: Math.random() * 3 + 2
+                });
+            }
+            animateConfetti();
+        }
+
+        function animateConfetti() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            confetti.forEach((p, index) => {
+                ctx.fillStyle = p.color;
+                ctx.fillRect(p.x, p.y, p.size, p.size);
+                p.y += p.speed;
+                if (p.y > canvas.height) confetti[index].y = -10;
+            });
+            requestAnimationFrame(animateConfetti);
+        }
+    </script>
+</body>
+</html>
